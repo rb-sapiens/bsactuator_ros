@@ -9,7 +9,6 @@ project(bsactuator)
 ################################################################################
 find_package(catkin REQUIRED COMPONENTS
   rospy
-  git+https://github.com/rb-sapiens/bsactuator.git
 )
 
 ################################################################################
