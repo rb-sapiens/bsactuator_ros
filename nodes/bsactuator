@@ -1,0 +1,59 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+#################################################################################
+# MIT License
+
+# Copyright (c) 2021 Shun Nagao
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#################################################################################
+
+import rospy
+
+from std_msgs.msg import String
+from copy import copy
+
+# global variables
+
+def set_length(msg):
+    '''
+    Callback function of /set_length topic subscription
+
+    msg.data : std_msgs/String
+    '''
+    global next_mode
+    global current_mode
+
+    if not msg.data in mode_list.keys():
+        return
+    if current_mode == msg.data:
+        return
+    next_mode = msg.data
+    rospy.loginfo('next_mode: %s', next_mode)
+
+if __name__ == '__main__':
+    rospy.init_node('bsactuator', log_level=rospy.DEBUG)
+
+    rospy.Subscriber('set_length', String, set_length)
+
+    while not rospy.is_shutdown():
+        rate = rospy.Rate(10)
+
+        rate.sleep()

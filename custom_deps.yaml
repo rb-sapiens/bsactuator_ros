@@ -1,0 +1,3 @@
+bsactuator:
+    ubuntu: |
+        pip install git+https://github.com/rb-sapiens/bsactuator.git
