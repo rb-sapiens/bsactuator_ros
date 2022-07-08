@@ -42,6 +42,16 @@ def set_length(msg):
     rospy.loginfo('test')
 
 if __name__ == '__main__':
+    rospy.loginfo("starting bsactuator")
     rospy.init_node('bsactuator', log_level=rospy.DEBUG)
+    rospy.loginfo("set_length")
     rospy.Subscriber('set_length', String, set_length)
 
+    rate = rospy.Rate(10)
+    while not rospy.is_shutdown():
+        # トピックを送信する。
+
+        rospy.loginfo("Message published")
+
+        # 0.1 秒スリープする。
+        rate.sleep()
