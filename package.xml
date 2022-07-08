@@ -7,5 +7,4 @@
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
   <depend>rospy</depend>
-  <depend>git+https://github.com/rb-sapiens/bsactuator.git</depend>
 </package>
