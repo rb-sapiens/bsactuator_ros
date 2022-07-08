@@ -43,10 +43,5 @@ def set_length(msg):
 
 if __name__ == '__main__':
     rospy.init_node('bsactuator', log_level=rospy.DEBUG)
-
     rospy.Subscriber('set_length', String, set_length)
 
-    while not rospy.is_shutdown():
-        rate = rospy.Rate(10)
-
-        rate.sleep()
