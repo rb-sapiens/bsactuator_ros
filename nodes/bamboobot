@@ -1,0 +1,117 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+#################################################################################
+# MIT License
+
+# Copyright (c) 2022 Shun Nagao
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#################################################################################
+
+import rospy
+from bsactuator import bsactuator
+
+from std_msgs.msg import Int16
+from copy import copy
+import time
+import os
+
+# global variables
+speed = 7
+moving = False
+publisher_get_length = None
+current_length = 0
+ba = None
+waitsec = 0.5
+timeout = time.time()
+
+usb_list = []
+
+def set_length(msg):
+    '''
+    Callback function of /set_length topic subscription
+
+    msg.data : std_msgs/Int16
+    '''
+    global speed
+    global moving
+    global publisher_get_length
+    global current_length
+    global ba
+    global timeout
+    global waitsec
+
+    if time.time() < timeout:
+        return
+    timeout = time.time() + waitsec
+
+    current_length = int(ba.get_length())
+    publisher_get_length.publish(current_length)
+    rospy.loginfo("current_length: %dmm", msg.data)
+
+    if moving == False:
+        moving = True
+        rospy.loginfo("moving to %dmm", msg.data)
+
+        if msg.data == 0:
+            message = ba.healthcheck()
+            rospy.loginfo(message)
+            ba.reset()
+        else:
+            result = ba.set_length(msg.data, speed)
+
+        current_length = int(ba.get_length())
+        publisher_get_length.publish(current_length)
+        moving = False
+
+if __name__ == '__main__':
+    rospy.init_node('bamboobot', log_level=rospy.DEBUG)
+    usb_fixed = False
+    usb_list_str = rospy.get_param(rospy.get_name() + "/usblist")
+    usb_list = usb_list_str.split(",")
+    sudopass = rospy.get_param(rospy.get_name() + "/sudopass")
+
+    for usb in usb_list:
+        try:
+            if usb_fixed == False:
+                os.system('echo "'+sudopass+'" | sudo -S chmod 777 ' + usb + ' 2> /dev/null')
+                ba = bsactuator.BsActuator(usb,115200)
+                time.sleep(2)
+                message = ba.healthcheck()
+                rospy.loginfo("USB connection:" + message)
+                rospy.loginfo("USB device set:" + usb)
+                usb_fixed = True
+        except Exception as e:
+            rospy.loginfo("USB device not set:" + usb)
+            rospy.loginfo(e)
+
+    # setting subscribers
+    rospy.loginfo("setting subscribers...")
+    rospy.Subscriber('set_length', Int16, set_length)
+
+    # setting publishers
+    rospy.loginfo("setting publishers...")
+    publisher_get_length = rospy.Publisher("length", Int16, queue_size=10)
+
+    rospy.loginfo("bamboobot started.")
+
+    r = rospy.Rate(10)
+    while not rospy.is_shutdown():
+        r.sleep()

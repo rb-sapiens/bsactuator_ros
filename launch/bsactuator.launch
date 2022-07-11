@@ -1,4 +1,0 @@
-<launch>
-  <node pkg="bsactuator" type="bsactuator" name="bsactuator">
-  </node>
-</launch>
