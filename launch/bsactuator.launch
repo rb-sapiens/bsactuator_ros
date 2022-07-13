@@ -2,7 +2,7 @@
   <arg name="usblist" default="/dev/ttyUSB0,/dev/ttyUSB1,/dev/ttyUSB2"/>
   <arg name="sudopass" default=""/>
 
-  <node pkg="bamboobot" type="bamboobot" name="bamboobot">
+  <node pkg="bsactuator_ros" type="bsactuator_ros" name="bsactuator">
     <param name="usblist" value="$(arg usblist)"/>
     <param name="sudopass" value="$(arg sudopass)"/>
   </node>
