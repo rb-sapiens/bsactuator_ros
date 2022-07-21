@@ -29,6 +29,7 @@ import rospy
 from bsactuator import bsactuator
 import usb
 from std_msgs.msg import Int16
+from actionlib_msgs.msg import GoalStatus
 from copy import copy
 import time
 import os
@@ -37,6 +38,8 @@ import os
 speed = 7
 moving = False
 publisher_get_length = None
+publisher_goal_status = None
+
 current_length = 0
 ba = None
 waitsec = 0.5
@@ -79,6 +82,15 @@ def set_length(msg):
 
         current_length = int(ba.get_length())
         publisher_get_length.publish(current_length)
+
+        goal = GoalStatus()
+        stamp = rospy.Time.now()
+        goal.goal_id.stamp = stamp
+        goal.goal_id.id = "bsactuator-" + str(stamp.secs) + "." + str(stamp.nsecs)
+        goal.status = 3
+        goal.text = "Goal reached."
+        publisher_goal_status.publish(goal)
+
         moving = False
 
 if __name__ == '__main__':
@@ -109,7 +121,8 @@ if __name__ == '__main__':
 
     # setting publishers
     rospy.loginfo("setting publishers...")
-    publisher_get_length = rospy.Publisher("length", Int16, queue_size=10)
+    publisher_get_length = rospy.Publisher("bsactuator/length", Int16, queue_size=10)
+    publisher_goal_status = rospy.Publisher("bsactuator/status", GoalStatus, queue_size=10)
 
     rospy.loginfo("bamboobot started.")
 
