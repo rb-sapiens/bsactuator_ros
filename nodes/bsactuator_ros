@@ -106,6 +106,8 @@ if __name__ == '__main__':
     usb_manager.get_usb_props()
     usb_manager.add_permission()
 
+    ba = bsactuator.BsActuator(usb_manager.usb_path,115200)
+
     # setting subscribers
     rospy.loginfo("setting subscribers...")
     rospy.Subscriber('set_length', Int16, set_length)
