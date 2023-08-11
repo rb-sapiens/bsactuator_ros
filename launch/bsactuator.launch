@@ -1,5 +1,5 @@
 <launch>
-  <arg name="usbname" default="ch341-uart"/>
+  <arg name="usbname" default="Arduino"/>
   <arg name="sudopass" default=""/>
 
   <node pkg="bsactuator_ros" type="bsactuator_ros" name="bsactuator" output="screen">

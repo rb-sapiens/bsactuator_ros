@@ -28,7 +28,9 @@
 import rospy
 from bsactuator import bsactuator
 from std_msgs.msg import Int16
+from std_msgs.msg import String
 from actionlib_msgs.msg import GoalStatus
+from bsactuator_ros.utilities.usb_manager import UsbManager
 from copy import copy
 import time
 import os
@@ -73,8 +75,6 @@ def set_length(msg):
         rospy.loginfo("moving to %dmm", msg.data)
 
         if msg.data == 0:
-            message = ba.healthcheck()
-            rospy.loginfo(message)
             ba.reset()
         else:
             result = ba.set_length(msg.data, speed)
@@ -92,31 +92,45 @@ def set_length(msg):
 
         moving = False
 
+def hold(msg):
+    '''
+    Callback function of /hold topic subscription
+
+    msg.data : std_msgs/String
+    '''
+    if msg.data == "true":
+        ba.hold()
+
+def release(msg):
+    '''
+    Callback function of /release topic subscription
+
+    msg.data : std_msgs/String
+    '''
+    if msg.data == "true":
+        ba.release()
+
+
 if __name__ == '__main__':
     rospy.init_node('bsactuator', log_level=rospy.DEBUG)
     usb_fixed = False
     usb_name = rospy.get_param(rospy.get_name() + "/usbname")
     sudopass = rospy.get_param(rospy.get_name() + "/sudopass")
 
-    usb_str = os.popen('dmesg | grep '+usb_name+' | tail -1').read()
-    if usb_str == None:
-        rospy.logerr("No USB devices found.")
-        quit()
-    usb = "/dev/" + usb_str.split(" ")[-1].replace("\n","")
+    # USBの抜き差し
+    usb_manager = UsbManager(sudopass, usb_name)
+    usb_manager.get_usb_props()
+    usb_manager.plug_unplug()
+    usb_manager.get_usb_props()
+    usb_manager.add_permission()
 
-    try:
-        os.system('echo "'+sudopass+'" | sudo -S chmod 777 ' + usb + ' 2> /dev/null')
-        ba = bsactuator.BsActuator(usb,115200)
-        message = ba.healthcheck()
-        rospy.loginfo("USB connection:" + message)
-        rospy.loginfo("USB device set:" + usb)
-    except Exception as e:
-        rospy.loginfo("USB device not set:" + usb)
-        rospy.loginfo(e)
+    ba = bsactuator.BsActuator(usb_manager.usb_path,115200)
 
     # setting subscribers
     rospy.loginfo("setting subscribers...")
     rospy.Subscriber('set_length', Int16, set_length)
+    rospy.Subscriber('hold', String, hold)
+    rospy.Subscriber('release', String, release)
 
     # setting publishers
     rospy.loginfo("setting publishers...")
