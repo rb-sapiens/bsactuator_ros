@@ -29,6 +29,7 @@ import rospy
 from bsactuator import bsactuator
 from std_msgs.msg import Int16
 from actionlib_msgs.msg import GoalStatus
+from utilities.usb_manager import UsbManager
 from copy import copy
 import time
 import os
