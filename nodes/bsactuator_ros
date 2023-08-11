@@ -29,7 +29,7 @@ import rospy
 from bsactuator import bsactuator
 from std_msgs.msg import Int16
 from actionlib_msgs.msg import GoalStatus
-from utilities.usb_manager import UsbManager
+from bsactuator_ros.utilities.usb_manager import UsbManager
 from copy import copy
 import time
 import os
@@ -99,21 +99,12 @@ if __name__ == '__main__':
     usb_name = rospy.get_param(rospy.get_name() + "/usbname")
     sudopass = rospy.get_param(rospy.get_name() + "/sudopass")
 
-    usb_str = os.popen('dmesg | grep '+usb_name+' | tail -1').read()
-    if usb_str == None:
-        rospy.logerr("No USB devices found.")
-        quit()
-    usb = "/dev/" + usb_str.split(" ")[-1].replace("\n","")
-
-    try:
-        os.system('echo "'+sudopass+'" | sudo -S chmod 777 ' + usb + ' 2> /dev/null')
-        ba = bsactuator.BsActuator(usb,115200)
-        message = ba.healthcheck()
-        rospy.loginfo("USB connection:" + message)
-        rospy.loginfo("USB device set:" + usb)
-    except Exception as e:
-        rospy.loginfo("USB device not set:" + usb)
-        rospy.loginfo(e)
+    # USBの抜き差し
+    usb_manager = UsbManager(sudopass, usb_name)
+    usb_manager.get_usb_props()
+    usb_manager.plug_unplug()
+    usb_manager.get_usb_props()
+    usb_manager.add_permission()
 
     # setting subscribers
     rospy.loginfo("setting subscribers...")
