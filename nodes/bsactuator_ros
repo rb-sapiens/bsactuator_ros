@@ -61,6 +61,7 @@ def set_length(msg):
     global ba
     global timeout
     global waitsec
+    global model
 
     if model is not "50mm02":
         if time.time() < timeout:
