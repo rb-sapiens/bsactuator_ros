@@ -95,15 +95,6 @@ def set_length(msg):
 
             moving = False
 
-def stop(msg):
-    '''
-    Callback function of /stop topic subscription
-
-    msg.data : std_msgs/String
-    '''
-    if msg.data == "true":
-        ba.stop()
-
 def hold(msg):
     '''
     Callback function of /hold topic subscription
@@ -122,6 +113,23 @@ def release(msg):
     if msg.data == "true":
         ba.release()
 
+def reset(msg):
+    '''
+    Callback function of /reset topic subscription
+
+    msg.data : std_msgs/String
+    '''
+    if msg.data == "true":
+        ba.reset()
+
+def stop(msg):
+    '''
+    Callback function of /stop topic subscription
+
+    msg.data : std_msgs/String
+    '''
+    if msg.data == "true":
+        ba.stop()
 
 if __name__ == '__main__':
     rospy.init_node('bsactuator', log_level=rospy.DEBUG)
@@ -144,6 +152,8 @@ if __name__ == '__main__':
     rospy.Subscriber('set_length', Int16, set_length)
     rospy.Subscriber('hold', String, hold)
     rospy.Subscriber('release', String, release)
+    rospy.Subscriber('reset', String, reset)
+    rospy.Subscriber('stop', String, stop)
 
     # setting publishers
     rospy.loginfo("setting publishers...")
@@ -154,10 +164,4 @@ if __name__ == '__main__':
 
     r = rospy.Rate(10)
     while not rospy.is_shutdown():
-        if model == "50mm02":
-            if time.time() > timeout:
-                timeout = time.time() + waitsec
-                current_length = int(ba.get_length())
-                publisher_get_length.publish(current_length)
-
         r.sleep()
