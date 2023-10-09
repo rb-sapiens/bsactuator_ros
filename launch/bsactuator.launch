@@ -1,9 +1,11 @@
 <launch>
   <arg name="usbname" default="Arduino"/>
   <arg name="sudopass" default=""/>
+  <arg name="model" default="25mm01"/>
 
   <node pkg="bsactuator_ros" type="bsactuator_ros" name="bsactuator" output="screen">
     <param name="usbname" value="$(arg usbname)"/>
     <param name="sudopass" value="$(arg sudopass)"/>
+    <param name="model" value="$(arg model)"/>
   </node>
 </launch>

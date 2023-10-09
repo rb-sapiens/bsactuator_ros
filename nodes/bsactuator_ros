@@ -61,36 +61,41 @@ def set_length(msg):
     global ba
     global timeout
     global waitsec
+    global model
 
-    if time.time() < timeout:
-        return
-    timeout = time.time() + waitsec
+    if model is not "50mm02":
+        if time.time() < timeout:
+            return
+        timeout = time.time() + waitsec
 
     current_length = int(ba.get_length())
     publisher_get_length.publish(current_length)
     rospy.loginfo("current_length: %dmm", msg.data)
 
-    if moving == False:
-        moving = True
-        rospy.loginfo("moving to %dmm", msg.data)
+    if model == "50mm02":
+        ba.set_length(msg.data)
+    else:
+        if moving == False:
+            moving = True
+            rospy.loginfo("moving to %dmm", msg.data)
 
-        if msg.data == 0:
-            ba.reset()
-        else:
-            result = ba.set_length(msg.data, speed)
+            if msg.data == 0:
+                ba.reset()
+            else:
+                result = ba.set_length(msg.data, speed)
 
-        current_length = int(ba.get_length())
-        publisher_get_length.publish(current_length)
+            current_length = int(ba.get_length())
+            publisher_get_length.publish(current_length)
 
-        goal = GoalStatus()
-        stamp = rospy.Time.now()
-        goal.goal_id.stamp = stamp
-        goal.goal_id.id = "bsactuator-" + str(stamp.secs) + "." + str(stamp.nsecs)
-        goal.status = 3
-        goal.text = "Goal reached."
-        publisher_goal_status.publish(goal)
+            goal = GoalStatus()
+            stamp = rospy.Time.now()
+            goal.goal_id.stamp = stamp
+            goal.goal_id.id = "bsactuator-" + str(stamp.secs) + "." + str(stamp.nsecs)
+            goal.status = 3
+            goal.text = "Goal reached."
+            publisher_goal_status.publish(goal)
 
-        moving = False
+            moving = False
 
 def hold(msg):
     '''
@@ -110,12 +115,30 @@ def release(msg):
     if msg.data == "true":
         ba.release()
 
+def reset(msg):
+    '''
+    Callback function of /reset topic subscription
+
+    msg.data : std_msgs/String
+    '''
+    if msg.data == "true":
+        ba.reset()
+
+def stop(msg):
+    '''
+    Callback function of /stop topic subscription
+
+    msg.data : std_msgs/String
+    '''
+    if msg.data == "true":
+        ba.stop()
 
 if __name__ == '__main__':
     rospy.init_node('bsactuator', log_level=rospy.DEBUG)
     usb_fixed = False
     usb_name = rospy.get_param(rospy.get_name() + "/usbname")
     sudopass = rospy.get_param(rospy.get_name() + "/sudopass")
+    model = rospy.get_param(rospy.get_name() + "/model")
 
     # USBの抜き差し
     usb_manager = UsbManager(sudopass, usb_name)
@@ -124,13 +147,15 @@ if __name__ == '__main__':
     usb_manager.get_usb_props()
     usb_manager.add_permission()
 
-    ba = bsactuator.BsActuator(usb_manager.usb_path,115200)
+    ba = bsactuator.BsActuator(usb_manager.usb_path,115200,model)
 
     # setting subscribers
     rospy.loginfo("setting subscribers...")
     rospy.Subscriber('set_length', Int16, set_length)
     rospy.Subscriber('hold', String, hold)
     rospy.Subscriber('release', String, release)
+    rospy.Subscriber('reset', String, reset)
+    rospy.Subscriber('stop', String, stop)
 
     # setting publishers
     rospy.loginfo("setting publishers...")
