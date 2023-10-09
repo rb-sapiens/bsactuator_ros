@@ -62,9 +62,10 @@ def set_length(msg):
     global timeout
     global waitsec
 
-    if time.time() < timeout:
-        return
-    timeout = time.time() + waitsec
+    if model is not "50mm02":
+        if time.time() < timeout:
+            return
+        timeout = time.time() + waitsec
 
     current_length = int(ba.get_length())
     publisher_get_length.publish(current_length)
