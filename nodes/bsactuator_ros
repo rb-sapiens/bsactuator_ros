@@ -153,7 +153,7 @@ if __name__ == '__main__':
     rospy.init_node('bsactuator', log_level=rospy.DEBUG)
     model = "50mm02"
 
-    ba = bsactuator.BsActuator("/dev/bambooshoot_actuator",9600,model)
+    ba = bsactuator.BsActuator("/dev/bambooshoot_actuator",115200,model)
 
     # setting subscribers
     rospy.loginfo("setting subscribers...")
