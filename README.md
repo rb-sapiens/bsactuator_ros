@@ -24,7 +24,7 @@ mv bambooshoot_actuator.rules /etc/udev/rules.d/
 roslaunch bsactuator_ros bsactuator.launch
 ```
 
-## Subscribers
+## Publishers
 
 #### /set_length
 
@@ -36,12 +36,16 @@ ex.
 rostopic pub -1 /set_length std_msgs/Int16 300
 ```
 
-## Publishers
+## Subscribers
 
 #### /bsactuator/length
+
+- Int16
 
 現在の長さ[mm]
 
 #### /bsactuator/status
+
+- GoalStatus
 
 伸縮が終わった時に発行されるステータス
