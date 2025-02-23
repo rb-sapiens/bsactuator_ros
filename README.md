@@ -16,6 +16,7 @@ pip3 install git+https://github.com/rb-sapiens/bsactuator.git
 ```
 cd bsactuator_ros
 mv bambooshoot_actuator.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules
 ```
 
 ## Launch ファイルの実行
